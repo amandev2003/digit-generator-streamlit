@@ -11,8 +11,11 @@ if st.button("Generate"):
     model = load_model()
     images = generate_images(model, digit, num_images=5)
 
+    images = torch.tensor(images)
+
     fig, ax = plt.subplots(figsize=(10, 2))
     grid = make_grid(images, nrow=5, padding=2)
     ax.imshow(grid.permute(1, 2, 0).squeeze(), cmap="gray")
     ax.axis("off")
     st.pyplot(fig)
+
