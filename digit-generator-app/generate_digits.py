@@ -1,14 +1,15 @@
 import os
 import torch
 import gdown
-from cvae_model import CVAE  # Make sure this file defines your CVAE model properly
+from cvae_model import CVAE  # make sure this exists and defines your model correctly
 
 def load_model(path="cvae.pth", device=None):
     if not os.path.exists(path):
-        print("Model not found locally. Downloading from Google Drive...")
+        print("Model not found locally. Downloading...")
         gdown.download(
-            "https://drive.google.com/uc?id=1_Ikby1WDQzilnnIXhiyEu0G5Z_viGA2D", 
-            path, quiet=False
+            "https://drive.google.com/uc?id=1_Ikby1WDQzilnnIXhiyEu0G5Z_viGA2D",
+            path,
+            quiet=False
         )
 
     if device is None:
@@ -24,11 +25,15 @@ def generate_images(model, digit, num_images=5, device=None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # ✅ z and labels must be PyTorch tensors
-    z = torch.randn(num_images, model.latent_dim).to(device)
-    labels = torch.full((num_images,), digit, dtype=torch.long).to(device)
+    # ✅ Generate random latent vectors using torch (NOT numpy)
+    z = torch.randn(num_images, model.latent_dim, device=device)
 
+    # ✅ Generate digit labels as torch tensor
+    labels = torch.full((num_images,), digit, dtype=torch.long, device=device)
+
+    # ✅ Model expects tensors — decode then detach and convert to numpy for visualization
     with torch.no_grad():
-        samples = model.decode(z, labels).cpu()
+        outputs = model.decode(z, labels).cpu()
 
-    return samples.numpy()  # returns a NumPy array to visualize in Streamlit
+    # ✅ Return as numpy array for matplotlib display
+    return outputs.numpy()
